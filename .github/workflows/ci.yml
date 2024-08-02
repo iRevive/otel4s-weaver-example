@@ -19,6 +19,7 @@ env:
   OTEL_METRICS_EXPORTER: none
   OTEL_EXPORTER_OTLP_PROTOCOL: ${{ secrets.OTEL_EXPORTER_OTLP_PROTOCOL }}
   OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}
+  OTEL_RESOURCE_ATTRIBUTES: revision=${{ github.sha }}
   OTEL_SERVICE_NAME: ${{ github.ref_name }}-${{ github.run_attempt }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

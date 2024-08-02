@@ -6,6 +6,7 @@ ThisBuild / githubWorkflowEnv ++= Map(
   "OTEL_EXPORTER_OTLP_ENDPOINT" -> "${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}",
   "OTEL_EXPORTER_OTLP_HEADERS"  -> "${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}",
   "OTEL_SERVICE_NAME"           -> "${{ github.ref_name }}-${{ github.run_attempt }}",
+  "OTEL_RESOURCE_ATTRIBUTES"    -> "revision=${{ github.sha }}",
   "OTEL_METRICS_EXPORTER"       -> "none", // we don't export metrics
   "OTEL_SDK_DISABLED" -> "${{ !startsWith(github.ref, 'refs/pull') || secrets.OTEL_SDK_DISABLED }}" // publish traces only for PRs
 )
@@ -17,7 +18,7 @@ ThisBuild / githubWorkflowBuildPostamble +=
   WorkflowStep.ComputeVar("tests_end_time", "date -d \"$(date +'%Y-%m-%d') 23:59:59\" +%s%3N")
 
 ThisBuild / githubWorkflowBuildPostamble += {
-  def body= {
+  def body = {
     val panesJson =
       """{"7uq": {
         |  "datasource":"grafanacloud-traces",
@@ -35,7 +36,7 @@ ThisBuild / githubWorkflowBuildPostamble += {
         |}}""".stripMargin.replace(" ", "").replace("\n", "")
 
     val panes = java.net.URLEncoder.encode(panesJson, "UTF-8")
-    val link = s"https://$${{ secrets.GRAFANA_HOST }}/explore?panes=$panes&schemaVersion=1&orgId=1"
+    val link  = s"https://$${{ secrets.GRAFANA_HOST }}/explore?panes=$panes&schemaVersion=1&orgId=1"
     s"The traces can be reviewed [here]($link)."
   }
 
@@ -44,10 +45,10 @@ ThisBuild / githubWorkflowBuildPostamble += {
     name = Some("Publish 'Grafana traces' comment"),
     cond = Some("startsWith(github.ref, 'refs/pull')"),
     params = Map(
-      "issue-number" -> "${{ github.event.pull_request.number }}",
+      "issue-number"   -> "${{ github.event.pull_request.number }}",
       "comment-author" -> "github-actions[bot]",
-      "body" -> body
-    ),
+      "body"           -> body
+    )
   )
 }
 
