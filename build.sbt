@@ -36,7 +36,7 @@ ThisBuild / githubWorkflowBuildPostamble += {
         |}}""".stripMargin.replace(" ", "").replace("\n", "")
 
     val panes = java.net.URLEncoder.encode(panesJson, "UTF-8")
-    val link  = s"https://$${{ secrets.GRAFANA_HOST }}/explore?panes=$panes&schemaVersion=1&orgId=1"
+    val link  = s"https://$${{ env.GRAFANA_HOST }}/explore?panes=$panes&schemaVersion=1&orgId=1"
     s"The traces can be reviewed [here]($link)."
   }
 
