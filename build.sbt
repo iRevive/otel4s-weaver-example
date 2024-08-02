@@ -19,8 +19,13 @@ ThisBuild / githubWorkflowBuildPostamble +=
 
 ThisBuild / githubWorkflowBuildPostamble += {
   def body = {
+    val serviceName = "service_name_placeholder"
+    val revision    = "revision_placeholder"
+    val rangeFrom   = "range_from_placeholder"
+    val rangeTo     = "range_to_placeholder"
+
     val panesJson =
-      """{"7uq": {
+      s"""{"7uq": {
         |  "datasource":"grafanacloud-traces",
         |  "queries":[
         |    {
@@ -28,15 +33,21 @@ ThisBuild / githubWorkflowBuildPostamble += {
         |      "datasource":{"type":"tempo","uid":"grafanacloud-traces"},
         |      "queryType":"traceql",
         |      "limit":100,
-        |      "filters":[{"id":"12faf5c5","operator":"=","scope":"resource","tag":"revision",value=["${{ github.sha }}"],"valueType":"string"}],
-        |      "query":"{resource.service.name=\"${{ github.ref_name }}-${{ github.run_attempt }}\"}"
+        |      "filters":[{"id":"12faf5c5","operator":"=","scope":"resource","tag":"revision",value=["$revision"],"valueType":"string"}],
+        |      "query":"{resource.service.name=\"$serviceName\"}"
         |    }
         |  ],
-        |  "range":{"from":"${{ env.tests_start_time }}","to":"${{ env.tests_end_time }}"}
+        |  "range":{"from":"$rangeFrom","to":"$rangeTo"}
         |}}""".stripMargin.replace(" ", "").replace("\n", "")
 
-    val panes = java.net.URLEncoder.encode(panesJson, "UTF-8")
-    val link  = s"https://$${{ vars.GRAFANA_HOST }}/explore?panes=$panes&schemaVersion=1&orgId=1"
+    val panesEncoded = java.net.URLEncoder.encode(panesJson, "UTF-8")
+    val panes = panesEncoded
+      .replace(serviceName, "${{ github.ref_name }}-${{ github.run_attempt }}")
+      .replace(revision, "${{ github.sha }}")
+      .replace(rangeFrom, "${{ env.tests_start_time }}")
+      .replace(rangeTo, "${{ env.tests_end_time }}")
+
+    val link = s"https://d098b2fe4.grafana.net/explore?panes=$panes&schemaVersion=1&orgId=1"
     s"The traces can be reviewed [here]($link)."
   }
 
