@@ -66,7 +66,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          body: 'The traces can be reviewed [here](https://d098b2fe4.grafana.net/explore?panes={"7uq":{"datasource":"grafanacloud-traces","queries":[{"refId":"A","datasource":{"type":"tempo","uid":"grafanacloud-traces"},"queryType":"traceql","limit":100,"query":"{resource.service.name="${{ github.ref_name }}-${{ github.run_attempt }}"&&resource.revision="${{ github.sha }}"}"}],"range":{"from":"${{ env.tests_start_time }}","to":"${{ env.tests_end_time }}"}}}&schemaVersion=1&orgId=1).'
+          body: 'The traces can be reviewed at - https://d098b2fe4.grafana.net/explore?panes={"7uq":{"datasource":"grafanacloud-traces","queries":[{"refId":"A","datasource":{"type":"tempo","uid":"grafanacloud-traces"},"queryType":"traceql","limit":100,"query":"{resource.service.name="${{ github.ref_name }}-${{ github.run_attempt }}"&&resource.revision="${{ github.sha }}"}"}],"range":{"from":"${{ env.tests_start_time }}","to":"${{ env.tests_end_time }}"}}}&schemaVersion=1&orgId=1.'
 
       - name: Compress target directories
         run: tar cf targets.tar target project/target

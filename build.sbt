@@ -39,6 +39,7 @@ ThisBuild / githubWorkflowBuildPostamble += {
         |  "range":{"from":"$rangeFrom","to":"$rangeTo"}
         |}}""".stripMargin.replace(" ", "").replace("\n", "")
 
+    // https://d098b2fe4.grafana.net/explore?panes=%7B%227uq%22:%7B%22datasource%22:%22grafanacloud-traces%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22datasource%22:%7B%22type%22:%22tempo%22,%22uid%22:%22grafanacloud-traces%22%7D,%22queryType%22:%22traceql%22,%22limit%22:100,%22query%22:%22%7Bresource.service.name=%222/merge-1%22&&resource.revision=%22bf6a55a86bffdbcea99c3f063856e5187dd191dd%22%7D%22%7D%5D,%22range%22:%7B%22from%22:%221722556800000%22,%22to%22:%221722643199000%22%7D%7D%7D&schemaVersion=1&orgId=1
     val panesEncoded = panesJson // java.net.URLEncoder.encode(panesJson, "UTF-8")
     val panes = panesEncoded
       .replace(serviceName, "${{ github.ref_name }}-${{ github.run_attempt }}")
@@ -47,7 +48,7 @@ ThisBuild / githubWorkflowBuildPostamble += {
       .replace(rangeTo, "${{ env.tests_end_time }}")
 
     val link = s"https://d098b2fe4.grafana.net/explore?panes=$panes&schemaVersion=1&orgId=1"
-    s"The traces can be reviewed [here]($link)."
+    s"The traces can be reviewed at - $link."
   }
 
   WorkflowStep.Use(
