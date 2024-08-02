@@ -22,7 +22,7 @@ ThisBuild / githubWorkflowBuildPostamble += {
     val panes =
       """{"7uq": {
         |  "datasource":"grafanacloud-traces",
-        |  "queries":[
+        |  "queries":\[
         |    {
         |      "refId":"A",
         |      "datasource":{"type":"tempo","uid":"grafanacloud-traces"},
@@ -30,7 +30,7 @@ ThisBuild / githubWorkflowBuildPostamble += {
         |      "limit":100,
         |      "query":"{resource.revision=\"${{ github.sha }}\"}"
         |    }
-        |  ],
+        |  \],
         |  "range":{"from":"${{ env.tests_start_time }}","to":"${{ env.tests_end_time }}"}
         |}}""".stripMargin.replace(" ", "").replace("\n", "")
 
