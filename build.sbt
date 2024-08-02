@@ -22,7 +22,7 @@ ThisBuild / githubWorkflowBuildPostamble += {
     val panes =
       """{"7uq": {
         |  "datasource":"grafanacloud-traces",
-        |  "queries":\[
+        |  "queries":[
         |    {
         |      "refId":"A",
         |      "datasource":{"type":"tempo","uid":"grafanacloud-traces"},
@@ -30,12 +30,12 @@ ThisBuild / githubWorkflowBuildPostamble += {
         |      "limit":100,
         |      "query":"{resource.revision=\"${{ github.sha }}\"}"
         |    }
-        |  \],
+        |  ],
         |  "range":{"from":"${{ env.tests_start_time }}","to":"${{ env.tests_end_time }}"}
         |}}""".stripMargin.replace(" ", "").replace("\n", "")
 
-    val link = s"https://d098b2fe4.grafana.net/explore?panes=$panes&schemaVersion=1&orgId=1"
-    s"The traces can be reviewed [here]($link)."
+    val link = s"https://$${{ vars.GRAFANA_HOST }}/explore?panes=$panes&schemaVersion=1&orgId=1"
+    s"The traces can be reviewed here - $link."
   }
 
   WorkflowStep.Use(
@@ -72,6 +72,3 @@ lazy val root = project
         Map.empty[String, String]
     }
   )
-
-//The traces can be reviewed [here](https://synapseedu.grafana.net/explore?panes=%7B%227uq%22:%7B%22datasource%22:%22grafanacloud-traces%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22datasource%22:%7B%22type%22:%22tempo%22,%22uid%22:%22grafanacloud-traces%22%7D,%22queryType%22:%22traceql%22,%22limit%22:20,%22filters%22:%5B%7B%22id%22:%2212faf5c5%22,%22operator%22:%22%3D%22,%22scope%22:%22span%22%7D%5D,%22query%22:%22%7Bresource.service.name%3D%5C%22${{ github.ref_name }}-${{ github.run_attempt }}%5C%22%7D%22%7D%5D,%22range%22:%7B%22from%22:%22${{ env.tests_start_time }}%22,%22to%22:%22${{ env.tests_end_time }}%22%7D%7D%7D&schemaVersion=1&orgId=1).'
-//
