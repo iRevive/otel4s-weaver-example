@@ -44,8 +44,7 @@ ThisBuild / githubWorkflowBuildPostamble += {
     cond = Some("startsWith(github.ref, 'refs/pull')"),
     params = Map(
       "issue-number" -> "${{ github.event.pull_request.number }}",
-      // "comment-author" -> "github-actions[bot]",
-      "body" -> body
+      "body"         -> body
     )
   )
 }
