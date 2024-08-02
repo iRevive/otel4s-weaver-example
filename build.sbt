@@ -33,8 +33,7 @@ ThisBuild / githubWorkflowBuildPostamble += {
         |      "datasource":{"type":"tempo","uid":"grafanacloud-traces"},
         |      "queryType":"traceql",
         |      "limit":100,
-        |      "filters":[{"id":"12faf5c5","operator":"=","scope":"resource","tag":"revision",value=["$revision"],"valueType":"string"}],
-        |      "query":"{resource.service.name=\"$serviceName\"}"
+        |      "query":"{resource.service.name=\"$serviceName\" && resource.revision=\"$revision\"}"
         |    }
         |  ],
         |  "range":{"from":"$rangeFrom","to":"$rangeTo"}
@@ -47,7 +46,6 @@ ThisBuild / githubWorkflowBuildPostamble += {
       .replace(rangeFrom, "${{ env.tests_start_time }}")
       .replace(rangeTo, "${{ env.tests_end_time }}")
 
-    //https://d098b2fe4.grafana.net/explore?schemaVersion=1&panes=%7B%22qvn%22%3A%7B%22datasource%22%3A%22grafanacloud-traces%22%2C%22queries%22%3A%5B%7B%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22tempo%22%2C%22uid%22%3A%22grafanacloud-traces%22%7D%2C%22queryType%22%3A%22traceql%22%2C%22limit%22%3A20%2C%22tableType%22%3A%22traces%22%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22now-1h%22%2C%22to%22%3A%22now%22%7D%7D%7D&orgId=1
     val link = s"https://d098b2fe4.grafana.net/explore?panes=$panes&schemaVersion=1&orgId=1"
     s"The traces can be reviewed [here]($link)."
   }
