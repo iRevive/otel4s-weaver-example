@@ -10,6 +10,47 @@ ThisBuild / githubWorkflowEnv ++= Map(
   "OTEL_SDK_DISABLED" -> "${{ !startsWith(github.ref, 'refs/pull') || secrets.OTEL_SDK_DISABLED }}" // publish traces only for PRs
 )
 
+ThisBuild / githubWorkflowBuildPreamble +=
+  WorkflowStep.ComputeVar("tests_start_time", "date -d \"$(date +'%Y-%m-%d') 00:00:00\" +%s%3N")
+
+ThisBuild / githubWorkflowBuildPostamble +=
+  WorkflowStep.ComputeVar("tests_end_time", "date -d \"$(date +'%Y-%m-%d') 23:59:59\" +%s%3N")
+
+ThisBuild / githubWorkflowBuildPostamble += {
+  def body= {
+    val panesJson =
+      """{"7uq": {
+        |  "datasource":"grafanacloud-traces",
+        |  "queries":[
+        |    {
+        |      "refId":"A",
+        |      "datasource":{"type":"tempo","uid":"grafanacloud-traces"},
+        |      "queryType":"traceql",
+        |      "limit":100,
+        |      "filters":[{"id":"12faf5c5","operator":"=","scope":"span"}],
+        |      "query":"{resource.service.name="${{ github.ref_name }}-${{ github.run_attempt }}"}"
+        |    }
+        |  ],
+        |  "range":{"from":"${{ env.tests_start_time }}","to":"${{ env.tests_end_time }}"}
+        |}}""".stripMargin.replace(" ", "").replace("\n", "")
+
+    val panes = java.net.URLEncoder.encode(panesJson, "UTF-8")
+    val link = s"https://$${{ secrets.GRAFANA_HOST }}/explore?panes=$panes&schemaVersion=1&orgId=1"
+    s"The traces can be reviewed [here]($link)."
+  }
+
+  WorkflowStep.Use(
+    UseRef.Public("peter-evans", "create-or-update-comment", "v4"),
+    name = Some("Publish 'Grafana traces' comment"),
+    cond = Some("startsWith(github.ref, 'refs/pull')"),
+    params = Map(
+      "issue-number" -> "${{ github.event.pull_request.number }}",
+      "comment-author" -> "github-actions[bot]",
+      "body" -> body
+    ),
+  )
+}
+
 lazy val root = project
   .in(file("."))
   .settings(
@@ -33,3 +74,6 @@ lazy val root = project
         Map.empty[String, String]
     }
   )
+
+//The traces can be reviewed [here](https://synapseedu.grafana.net/explore?panes=%7B%227uq%22:%7B%22datasource%22:%22grafanacloud-traces%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22datasource%22:%7B%22type%22:%22tempo%22,%22uid%22:%22grafanacloud-traces%22%7D,%22queryType%22:%22traceql%22,%22limit%22:20,%22filters%22:%5B%7B%22id%22:%2212faf5c5%22,%22operator%22:%22%3D%22,%22scope%22:%22span%22%7D%5D,%22query%22:%22%7Bresource.service.name%3D%5C%22${{ github.ref_name }}-${{ github.run_attempt }}%5C%22%7D%22%7D%5D,%22range%22:%7B%22from%22:%22${{ env.tests_start_time }}%22,%22to%22:%22${{ env.tests_end_time }}%22%7D%7D%7D&schemaVersion=1&orgId=1).'
+//
