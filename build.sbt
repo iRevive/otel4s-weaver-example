@@ -35,7 +35,7 @@ ThisBuild / githubWorkflowBuildPostamble += {
         |}}""".stripMargin.replace(" ", "").replace("\n", "")
 
     val link = s"https://d098b2fe4.grafana.net/explore?panes=$panes&schemaVersion=1&orgId=1"
-    s"The traces can be reviewed at - $link."
+    s"The traces can be reviewed [here]($link)."
   }
 
   WorkflowStep.Use(
