@@ -19,6 +19,7 @@ env:
   OTEL_METRICS_EXPORTER: none
   OTEL_EXPORTER_OTLP_PROTOCOL: ${{ secrets.OTEL_EXPORTER_OTLP_PROTOCOL }}
   OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}
+  OTEL_RESOURCE_ATTRIBUTES: revision=${{ github.sha }}
   OTEL_SERVICE_NAME: ${{ github.ref_name }}-${{ github.run_attempt }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -48,11 +49,24 @@ jobs:
       - name: Setup sbt
         uses: sbt/setup-sbt@v1
 
+      - name: Export tests_start_time
+        run: 'echo "tests_start_time=$(date -d "$(date +''%Y-%m-%d'') 00:00:00" +%s%3N)" >> $GITHUB_ENV'
+
       - name: Check that workflows are up to date
         run: sbt '++ ${{ matrix.scala }}' githubWorkflowCheck
 
       - name: Build project
         run: sbt '++ ${{ matrix.scala }}' test
+
+      - name: Export tests_end_time
+        run: 'echo "tests_end_time=$(date -d "$(date +''%Y-%m-%d'') 23:59:59" +%s%3N)" >> $GITHUB_ENV'
+
+      - name: Publish 'Grafana traces' comment
+        if: startsWith(github.ref, 'refs/pull')
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: 'The traces can be reviewed here - https://${{ vars.GRAFANA_HOST }}/explore?panes={"7uq":{"datasource":"grafanacloud-traces","queries":[{"refId":"A","datasource":{"type":"tempo","uid":"grafanacloud-traces"},"queryType":"traceql","limit":100,"query":"{resource.revision=\"${{github.sha}}\"}"}],"range":{"from":"${{env.tests_start_time}}","to":"${{env.tests_end_time}}"}}}&schemaVersion=1&orgId=1.'
 
       - name: Compress target directories
         run: tar cf targets.tar target project/target

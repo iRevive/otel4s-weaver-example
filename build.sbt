@@ -6,9 +6,48 @@ ThisBuild / githubWorkflowEnv ++= Map(
   "OTEL_EXPORTER_OTLP_ENDPOINT" -> "${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}",
   "OTEL_EXPORTER_OTLP_HEADERS"  -> "${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}",
   "OTEL_SERVICE_NAME"           -> "${{ github.ref_name }}-${{ github.run_attempt }}",
+  "OTEL_RESOURCE_ATTRIBUTES"    -> "revision=${{ github.sha }}",
   "OTEL_METRICS_EXPORTER"       -> "none", // we don't export metrics
   "OTEL_SDK_DISABLED" -> "${{ !startsWith(github.ref, 'refs/pull') || secrets.OTEL_SDK_DISABLED }}" // publish traces only for PRs
 )
+
+ThisBuild / githubWorkflowBuildPreamble +=
+  WorkflowStep.ComputeVar("tests_start_time", "date -d \"$(date +'%Y-%m-%d') 00:00:00\" +%s%3N")
+
+ThisBuild / githubWorkflowBuildPostamble +=
+  WorkflowStep.ComputeVar("tests_end_time", "date -d \"$(date +'%Y-%m-%d') 23:59:59\" +%s%3N")
+
+ThisBuild / githubWorkflowBuildPostamble += {
+  def body = {
+    val panes =
+      """{"7uq": {
+        |  "datasource":"grafanacloud-traces",
+        |  "queries":[
+        |    {
+        |      "refId":"A",
+        |      "datasource":{"type":"tempo","uid":"grafanacloud-traces"},
+        |      "queryType":"traceql",
+        |      "limit":100,
+        |      "query":"{resource.revision=\"${{ github.sha }}\"}"
+        |    }
+        |  ],
+        |  "range":{"from":"${{ env.tests_start_time }}","to":"${{ env.tests_end_time }}"}
+        |}}""".stripMargin.replace(" ", "").replace("\n", "")
+
+    val link = s"https://$${{ vars.GRAFANA_HOST }}/explore?panes=$panes&schemaVersion=1&orgId=1"
+    s"The traces can be reviewed here - $link."
+  }
+
+  WorkflowStep.Use(
+    UseRef.Public("peter-evans", "create-or-update-comment", "v4"),
+    name = Some("Publish 'Grafana traces' comment"),
+    cond = Some("startsWith(github.ref, 'refs/pull')"),
+    params = Map(
+      "issue-number" -> "${{ github.event.pull_request.number }}",
+      "body"         -> body
+    )
+  )
+}
 
 lazy val root = project
   .in(file("."))
