@@ -28,8 +28,8 @@ ThisBuild / githubWorkflowBuildPostamble += {
         |      "datasource":{"type":"tempo","uid":"grafanacloud-traces"},
         |      "queryType":"traceql",
         |      "limit":100,
-        |      "filters":[{"id":"12faf5c5","operator":"=","scope":"span"}],
-        |      "query":"{resource.service.name="${{ github.ref_name }}-${{ github.run_attempt }}"}"
+        |      "filters":[{"id":"12faf5c5","operator":"=","scope":"resource","tag":"revision",value=["${{ github.sha }}"],"valueType":"string"}],
+        |      "query":"{resource.service.name=\"${{ github.ref_name }}-${{ github.run_attempt }}\"}"
         |    }
         |  ],
         |  "range":{"from":"${{ env.tests_start_time }}","to":"${{ env.tests_end_time }}"}
