@@ -31,7 +31,7 @@ private object TraceUtils {
       .addAttributes(attributes)
       .withFinalizationStrategy(SpanFinalizer.Strategy.empty)
       .build
-      .use(span => fa.guaranteeCase(TraceUtils.recordOutcome(span, fatalCancelation = true)))
+      .use(span => fa.guaranteeCase(recordOutcome(span, fatalCancelation = true)))
   }
 
   def recordOutcome[F[_]: Monad](
@@ -41,7 +41,7 @@ private object TraceUtils {
     case Outcome.Succeeded(fa) =>
       fa.flatMap { expectations =>
         expectations.run.fold(
-          e => span.setStatus(StatusCode.Error) >> span.recordException(removeAsciiColors(e.head)),
+          e => span.setStatus(StatusCode.Error) >> span.recordException(removeAnsiColors(e.head)),
           _ => span.setStatus(StatusCode.Ok)
         )
       }
@@ -50,10 +50,10 @@ private object TraceUtils {
       span.setStatus(StatusCode.Error, "canceled").whenA(fatalCancelation)
 
     case Outcome.Errored(error) =>
-      span.setStatus(StatusCode.Error) >> span.recordException(removeAsciiColors(error))
+      span.setStatus(StatusCode.Error) >> span.recordException(removeAnsiColors(error))
   }
 
-  private def removeAsciiColors(throwable: Throwable): Throwable =
+  private def removeAnsiColors(throwable: Throwable): Throwable =
     throwable match {
       case a: AssertionException =>
         a.copy(message = AnsiColorRegex.replaceAllIn(a.message, ""))

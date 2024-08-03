@@ -1,6 +1,6 @@
 ThisBuild / scalaVersion := "2.13.14"
 
-ThisBuild / githubWorkflowPublish := Nil
+ThisBuild / githubWorkflowPublishTargetBranches := Nil
 ThisBuild / githubWorkflowEnv ++= Map(
   "OTEL_EXPORTER_OTLP_PROTOCOL" -> "${{ secrets.OTEL_EXPORTER_OTLP_PROTOCOL }}",
   "OTEL_EXPORTER_OTLP_ENDPOINT" -> "${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}",
