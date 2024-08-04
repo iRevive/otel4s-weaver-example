@@ -17,7 +17,7 @@ docker compose -f docker/observability/docker-compose.yml up -d
 
 Run tests:
 ```shell
-sbt tests
+sbt test
 ```
 
 Check out the traces at http://localhost:16686/.
