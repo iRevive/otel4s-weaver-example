@@ -1,11 +1,11 @@
 ThisBuild / scalaVersion := "2.13.14"
 
-ThisBuild / githubWorkflowPublish := Nil
+ThisBuild / githubWorkflowPublishTargetBranches := Nil
 ThisBuild / githubWorkflowEnv ++= Map(
   "OTEL_EXPORTER_OTLP_PROTOCOL" -> "${{ secrets.OTEL_EXPORTER_OTLP_PROTOCOL }}",
   "OTEL_EXPORTER_OTLP_ENDPOINT" -> "${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}",
   "OTEL_EXPORTER_OTLP_HEADERS"  -> "${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}",
-  "OTEL_SERVICE_NAME"           -> "${{ github.ref_name }}-${{ github.run_attempt }}",
+  "OTEL_SERVICE_NAME"           -> "${{ github.ref }}",
   "OTEL_RESOURCE_ATTRIBUTES"    -> "revision=${{ github.sha }}",
   "OTEL_METRICS_EXPORTER"       -> "none", // we don't export metrics
   "OTEL_SDK_DISABLED" -> "${{ !startsWith(github.ref, 'refs/pull') || secrets.OTEL_SDK_DISABLED }}" // publish traces only for PRs
